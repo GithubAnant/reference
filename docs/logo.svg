@@ -1,13 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc" shape-rendering="geometricPrecision">
   <title id="title">Reference logo</title>
-  <desc id="desc">A minimal black and white mark with two crossing reference paths.</desc>
+  <desc id="desc">A minimal black and white mark with a balanced bidirectional reference arrow crossed by an equal diagonal.</desc>
   <rect width="1024" height="1024" fill="#000"/>
-  <g fill="none" stroke="#fff" stroke-width="54" stroke-linecap="square" stroke-linejoin="miter">
-    <path d="M142 842 882 102"/>
-    <path d="M174 174 854 854"/>
-    <path d="M174 174v144"/>
-    <path d="M174 174l164 10"/>
-    <path d="M854 854l-150 26"/>
-    <path d="M854 854l-22-150"/>
+  <g transform="translate(512 512)" fill="none" stroke="#fff" stroke-width="56" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="3">
+    <g transform="rotate(45)">
+      <path d="M-438 0H438"/>
+      <path d="M-320 -88 L-438 0 L-320 88"/>
+      <path d="M320 -88 438 0 320 88"/>
+    </g>
+    <path d="M-438 0H438" transform="rotate(-45)"/>
   </g>
 </svg>
