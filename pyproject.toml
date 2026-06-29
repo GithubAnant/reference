@@ -1,0 +1,29 @@
+[project]
+name = "reference-mcp"
+version = "0.1.0"
+description = "One MCP server that lets any AI coding agent search every past session and memory file across all your tools (Claude Code, Codex, and more)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Kuber Mehta" }]
+keywords = ["mcp", "claude-code", "codex", "memory", "sessions", "history", "agents"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = ["mcp>=1.2.0"]
+
+[project.scripts]
+reference-mcp = "reference_mcp.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Kuberwastaken/reference"
+Issues = "https://github.com/Kuberwastaken/reference/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["reference_mcp"]
