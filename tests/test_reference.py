@@ -3,7 +3,8 @@
 from pathlib import Path
 
 from reference_mcp import normalize
-from reference_mcp.search import Index, tokens
+from reference_mcp.search import Hit, Index, MemoryHit, tokens
+from reference_mcp.server import _memory_evidence, _message_evidence
 
 FIX = Path(__file__).parent / "fixtures"
 
@@ -49,3 +50,33 @@ def test_cross_tool_search():
 def test_tokens_drop_stopwords():
     assert "the" not in tokens("the gemini grounding")
     assert "gemini" in tokens("the gemini grounding")
+
+
+def test_message_evidence_has_verification_path():
+    msgs = list(normalize.parse_claude(str(FIX / "claude_sample.jsonl")))
+    hit = Hit(msgs[0], 1.23456)
+
+    ev = _message_evidence(hit, "pg necessity")
+
+    assert ev["kind"] == "session_turn"
+    assert ev["source"] == "claude"
+    assert ev["role"] == "user"
+    assert ev["session_id"] == msgs[0].session_id
+    assert ev["path"] == msgs[0].path
+    assert ev["score"] == 1.2346
+    assert ev["verification_path"]["tool"] == "get_session"
+
+
+def test_memory_evidence_has_source_path():
+    hit = MemoryHit(source="claude", path="/tmp/CLAUDE.md", score=3, snippet="Use Postgres, not SQLite")
+
+    ev = _memory_evidence(hit)
+
+    assert ev == {
+        "kind": "memory_file",
+        "score": 3,
+        "source": "claude",
+        "path": "/tmp/CLAUDE.md",
+        "snippet": "Use Postgres, not SQLite",
+        "verification_path": {"tool": "search_memory", "source_path": "/tmp/CLAUDE.md"},
+    }

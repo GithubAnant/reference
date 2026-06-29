@@ -7,6 +7,7 @@ Tools return human-readable text because the consumer is an LLM agent.
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta, timezone
 
 from mcp.server.fastmcp import FastMCP
@@ -23,6 +24,42 @@ def _since(since_days: int | None) -> datetime | None:
 
 def _fmt_ts(ts: datetime | None) -> str:
     return ts.strftime("%Y-%m-%d %H:%M") if ts else "unknown-time"
+
+
+def _iso_ts(ts: datetime | None) -> str | None:
+    return ts.isoformat() if ts else None
+
+
+def _message_evidence(hit: search.Hit, query: str) -> dict:
+    m = hit.message
+    return {
+        "kind": "session_turn",
+        "score": round(hit.score, 4),
+        "source": m.source,
+        "role": m.role,
+        "timestamp": _iso_ts(m.ts),
+        "project": m.project or None,
+        "session_id": m.session_id,
+        "path": m.path,
+        "uuid": m.uuid or None,
+        "snippet": search.snippet(m.text, query),
+        "verification_path": {
+            "tool": "get_session",
+            "session_ref": m.session_id or m.path,
+            "source_path": m.path,
+        },
+    }
+
+
+def _memory_evidence(hit: search.MemoryHit) -> dict:
+    return {
+        "kind": "memory_file",
+        "score": hit.score,
+        "source": hit.source,
+        "path": hit.path,
+        "snippet": hit.snippet,
+        "verification_path": {"tool": "search_memory", "source_path": hit.path},
+    }
 
 
 def build_server() -> FastMCP:
@@ -94,6 +131,25 @@ def build_server() -> FastMCP:
                     f"  {search.snippet(m.text, query)}"
                 )
         return "\n".join(out) if out else f"Nothing found for {query!r}."
+
+    @mcp.tool()
+    def recall_evidence(query: str, limit: int = 8) -> str:
+        """Combined recall with machine-readable evidence metadata.
+
+        Use this before relying on an old-session or memory hit as current truth.
+        The response keeps the same search coverage as recall(), but returns JSON
+        with source type, timestamp/freshness, session/file refs, snippets, and a
+        verification path so agents can inspect the source before acting.
+        """
+        sess = search.get_index().search(query, limit=limit)
+        mem = search.search_memory(query, limit=max(3, limit // 2))
+        payload = {
+            "query": query,
+            "result_count": len(mem) + len(sess),
+            "memory": [_memory_evidence(h) for h in mem],
+            "sessions": [_message_evidence(h, query) for h in sess],
+        }
+        return json.dumps(payload, ensure_ascii=False, indent=2)
 
     @mcp.tool()
     def list_sessions(source: str | None = None, project: str | None = None, limit: int = 20) -> str:
