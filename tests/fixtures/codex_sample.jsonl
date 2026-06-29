@@ -1,0 +1,3 @@
+{"timestamp":"2026-06-26T11:00:00.000Z","type":"event","payload":{"type":"user_message","content":"wire up the gemini grounding workflow for signals"}}
+{"timestamp":"2026-06-26T11:00:10.000Z","type":"event","payload":{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Gemini grounded domain discovery finds the official website and payment signals."}]}}
+{"timestamp":"2026-06-26T11:00:11.000Z","type":"event","payload":{"type":"task_started"}}
