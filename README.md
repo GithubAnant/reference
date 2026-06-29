@@ -1,8 +1,10 @@
-# Reference
+<p align="center">
+  <img src="docs/logo.svg" alt="Reference" width="110" />
+</p>
 
-> **Let your AI agents search each other's past sessions.**
+<h1 align="center">Reference</h1>
 
-<!-- LOGO: drop docs/logo.(png|svg) here and embed it above the tagline once ready -->
+<p align="center"><strong>Let your AI agents search each other's past sessions.</strong></p>
 
 One [MCP](https://modelcontextprotocol.io) server you register in each tool. It reads every tool's session transcripts **and** memory files (`CLAUDE.md`, `AGENTS.md`, …) from your machine — so any agent can recall what any of them did before. Claude Code forgets what you did in Codex; Codex can't see your Claude history; Cursor knows neither. Reference fixes that.
 

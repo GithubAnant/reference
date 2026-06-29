@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Reference logo</title>
+  <desc id="desc">A minimal black and white mark with two crossing reference paths.</desc>
+  <rect width="1024" height="1024" fill="#000"/>
+  <g fill="none" stroke="#fff" stroke-width="54" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M142 842 882 102"/>
+    <path d="M174 174 854 854"/>
+    <path d="M174 174v144"/>
+    <path d="M174 174l164 10"/>
+    <path d="M854 854l-150 26"/>
+    <path d="M854 854l-22-150"/>
+  </g>
+</svg>
