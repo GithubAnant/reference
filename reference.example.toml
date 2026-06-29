@@ -1,0 +1,30 @@
+# Reference configuration (optional).
+#
+# Copy to ~/.config/reference-mcp/reference.toml (or point REFERENCE_MCP_CONFIG at it).
+# You only need this to add a NEW tool, tweak a built-in, or disable one.
+# Built-in tools "claude" and "codex" work with no config at all.
+
+# --- Add a new tool whose transcripts are JSONL --------------------------------
+# session_format: "claude" | "codex" | "generic"
+#   - "generic" is best-effort and works for many JSONL shapes.
+#   - If neither fits, add a parser in reference_mcp/normalize.py and open a PR.
+
+[[tool]]
+name = "cursor"
+session_globs = ["~/.cursor/chats/**/*.jsonl"]   # adjust to the real location
+session_format = "generic"
+memory_globs = ["~/.cursor/rules/**/*.md", "**/.cursor/rules/**/*.md"]
+keep_thinking = true
+enabled = true
+
+# --- Override a built-in (e.g. also index project-local CLAUDE.md files) --------
+# [[tool]]
+# name = "claude"
+# memory_globs = [
+#   "~/.claude/CLAUDE.md",
+#   "~/.claude/projects/**/memory/*.md",
+#   "~/Projects/**/CLAUDE.md",
+# ]
+
+# --- Disable a built-in --------------------------------------------------------
+# disable = ["codex"]
