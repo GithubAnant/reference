@@ -157,14 +157,14 @@ def build_server() -> FastMCP:
         return "\n".join(out) if out else f"Nothing found for {query!r}."
 
     @mcp.tool()
-    def recall_evidence(query: str, limit: int = 8) -> str:
-        """Combined recall with machine-readable evidence metadata.
+    def recall_with_sources(query: str, limit: int = 8) -> str:
+        """Same search as `recall`, but each hit comes WITH its sources: JSON with
+        source tool, timestamp/freshness, session/file refs, snippet, and a
+        verification path to inspect the original.
 
-        Use this before relying on an old-session or memory hit as current truth.
-        The response keeps the same search coverage as recall(), but returns JSON
-        with source type, timestamp/freshness, session/file refs, snippets, and a
-        verification path so agents can inspect the source before acting.
-        """
+        Use this instead of `recall` before relying on an old-session or memory hit
+        as current truth — when you need to cite where something came from, or check
+        how stale it is before acting on it."""
         sess = search.get_index().search(query, limit=limit)
         mem = search.search_memory(query, limit=max(3, limit // 2))
         payload = {
