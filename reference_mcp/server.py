@@ -74,7 +74,12 @@ def build_server() -> FastMCP:
         since_days: int | None = None,
         limit: int = 10,
     ) -> str:
-        """Search past session transcripts across ALL configured tools.
+        """Search the user's OWN past session transcripts across ALL their AI tools
+        (Claude Code, Codex, Cursor, …) — the actual conversations, not the code.
+
+        Reach for this (before `git log`/`git blame`) when you need a FILTERED slice
+        of history: a specific tool, project, speaker, or time window. For a quick
+        "what did we do / why" lookup with no filters, use `recall` instead.
 
         Args:
             query: words/phrase to look for.
@@ -102,7 +107,13 @@ def build_server() -> FastMCP:
 
     @mcp.tool()
     def search_memory(query: str, source: str | None = None, limit: int = 10) -> str:
-        """Search memory / instruction files (CLAUDE.md, AGENTS.md, memory/*.md) across all tools."""
+        """Search the user's memory / instruction files (CLAUDE.md, AGENTS.md,
+        memory/*.md) across all their AI tools.
+
+        Call this when you need a standing rule, preference, or decision the user
+        wrote down — "what's my convention for X", "do I have a rule about Y",
+        "what did I tell <other tool> to always do". This is durable guidance, not
+        conversation; for what happened in a session use `recall`/`search_sessions`."""
         hits = search.search_memory(query, source=source, limit=limit)
         if not hits:
             return f"No memory matches for {query!r}."
@@ -113,8 +124,21 @@ def build_server() -> FastMCP:
 
     @mcp.tool()
     def recall(query: str, limit: int = 8) -> str:
-        """Combined recall: best matching past session turns AND memory/instruction
-        snippets across every tool. Use this when you just want relevant context."""
+        """Cross-session, cross-tool memory. You don't remember other sessions, and
+        neither does git — this searches the user's OWN past conversations across ALL
+        their AI tools (Claude Code, Codex, Cursor): what they did, said, and decided
+        in chats you were never part of, including ones in a different tool.
+
+        Call this FIRST, before `git log`/`git blame`, whenever the user points at
+        past work the current session and repo state alone can't explain:
+          - "what were we doing", "where did we leave off", "last time", "earlier"
+          - "why did we / I do X", "what was the reasoning", "we decided to…"
+          - "did I already…", "have we tried…", "what was that command/approach"
+          - any task that continues something from another session or another tool.
+        git shows WHAT changed; recall shows WHY and the conversation around it.
+        Cheap and offline — when unsure whether it helps, call it. Use
+        `search_sessions` if you need to filter by tool/project/time, `get_session`
+        to read a full thread once a hit looks right."""
         sess = search.get_index().search(query, limit=limit)
         mem = search.search_memory(query, limit=max(3, limit // 2))
         out: list[str] = []
@@ -133,14 +157,14 @@ def build_server() -> FastMCP:
         return "\n".join(out) if out else f"Nothing found for {query!r}."
 
     @mcp.tool()
-    def recall_evidence(query: str, limit: int = 8) -> str:
-        """Combined recall with machine-readable evidence metadata.
+    def recall_with_sources(query: str, limit: int = 8) -> str:
+        """Same search as `recall`, but each hit comes WITH its sources: JSON with
+        source tool, timestamp/freshness, session/file refs, snippet, and a
+        verification path to inspect the original.
 
-        Use this before relying on an old-session or memory hit as current truth.
-        The response keeps the same search coverage as recall(), but returns JSON
-        with source type, timestamp/freshness, session/file refs, snippets, and a
-        verification path so agents can inspect the source before acting.
-        """
+        Use this instead of `recall` before relying on an old-session or memory hit
+        as current truth — when you need to cite where something came from, or check
+        how stale it is before acting on it."""
         sess = search.get_index().search(query, limit=limit)
         mem = search.search_memory(query, limit=max(3, limit // 2))
         payload = {
@@ -167,7 +191,11 @@ def build_server() -> FastMCP:
 
     @mcp.tool()
     def get_session(session_ref: str, max_chars: int = 16000) -> str:
-        """Return the full cleaned transcript of one session, by session id or file path."""
+        """Return the full cleaned transcript of one session, by session id or file path.
+
+        Use this AFTER `recall`/`search_sessions` surfaces a promising hit and you
+        need the surrounding conversation — the full reasoning, what was tried, how
+        it ended — not just the matched snippet. Pass the `session` id from the hit."""
         msgs = search.get_session_messages(session_ref)
         if not msgs:
             return f"No session matched {session_ref!r}. Use list_sessions to find one."
