@@ -14,6 +14,28 @@ also read it.
 
 ---
 
+## 0. When to actually use Reference (during normal work)
+
+**This is your cross-session, cross-tool memory.** You don't remember what happened in
+other sessions, and neither does git — Reference does. It searches the user's past
+conversations across *all* their AI tools, including chats you were never part of and ones
+in a different tool entirely.
+
+So once registered, **reach for `recall` before `git log`/`git blame`** any time the user
+refers to past work the current session and repo state can't explain on its own:
+
+- "what were we doing", "where did we leave off", "last time", "earlier"
+- "why did we / I do X", "what was the reasoning", "we decided to…"
+- "did I already…", "have we tried…", "what was that command/approach"
+- any task that continues something from another session — or another tool entirely.
+
+`git` shows *what* changed; `recall` shows *why*, plus the conversation around it. It's
+offline and cheap, so when unsure whether it helps, call it. Then:
+`search_sessions` to filter by tool/project/time, `search_memory` for standing rules/prefs,
+`get_session` to read a full thread once a hit looks right.
+
+---
+
 ## A. Set Reference up for the current tool
 
 1. **Identify the host you're running in** (Claude Code, Codex CLI, Cursor, VS Code, …).
