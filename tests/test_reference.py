@@ -23,11 +23,16 @@ def test_parse_claude():
 
 def test_parse_codex():
     msgs = list(normalize.parse_codex(str(FIX / "codex_sample.jsonl")))
+    # Codex logs each turn twice (user_message + message, agent_message + message);
+    # dedup collapses them to one user + one assistant.
     assert [m.role for m in msgs] == ["user", "assistant"]
     assert msgs[0].source == "codex"
     assert "gemini grounding" in msgs[0].text.lower()
-    # task_started and other non-message events are skipped
+    # task_started and developer/system scaffolding are skipped
     assert all(m.role in ("user", "assistant") for m in msgs)
+    assert not any("permissions instructions" in m.text for m in msgs)
+    # cwd from the leading session-meta line is carried onto every turn
+    assert all(m.project == "/Users/me/projects/signals" for m in msgs)
 
 
 def test_cross_tool_search():

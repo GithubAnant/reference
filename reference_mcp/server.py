@@ -202,13 +202,15 @@ def build_server() -> FastMCP:
         head = msgs[0]
         out = [f"Session {head.session_id} [{head.source}] · {head.project or '?'} · {len(msgs)} turns\n"]
         budget = max_chars
+        shown = 0
         for m in msgs:
             block = f"--- {m.role} ({_fmt_ts(m.ts)}) ---\n{m.text}\n"
             if budget - len(block) < 0:
-                out.append(f"… (truncated; raise max_chars to see more)")
+                out.append(f"… (showed {shown} of {len(msgs)} turns; raise max_chars for the rest)")
                 break
             out.append(block)
             budget -= len(block)
+            shown += 1
         return "\n".join(out)
 
     @mcp.tool()

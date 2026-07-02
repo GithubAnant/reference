@@ -138,34 +138,50 @@ def _codex_session_id(path: str) -> str:
 
 
 def parse_codex(path: str, keep_thinking: bool = True) -> Iterator[Message]:
-    """Parse a Codex CLI rollout JSONL (``~/.codex/sessions/.../rollout-*.jsonl``)."""
+    """Parse a Codex CLI rollout JSONL (``~/.codex/sessions/.../rollout-*.jsonl``).
+
+    Codex logs each turn twice — once as ``user_message``/``agent_message`` and
+    again as a ``message`` with an explicit role — so we dedup on ``(role, text)``.
+    ``cwd`` only appears on the leading session-meta line, not on message payloads,
+    so we carry the first one we see. ``developer``/``system`` messages are
+    instruction scaffolding, not conversation, and are skipped.
+    """
     sid = _codex_session_id(path)
+    cwd = ""
+    seen: set[tuple[str, str]] = set()
     for line in _iter_lines(path):
         try:
             obj = json.loads(line)
         except json.JSONDecodeError:
             continue
         payload = obj.get("payload") if isinstance(obj.get("payload"), dict) else {}
+        if not cwd and payload.get("cwd"):
+            cwd = payload["cwd"]
         ptype = payload.get("type")
         if ptype == "user_message":
             role = "user"
-        elif ptype in ("message", "agent_message"):
+        elif ptype == "agent_message":
+            role = "assistant"
+        elif ptype == "message":
             role = payload.get("role", "assistant") or "assistant"
         else:
+            continue
+        if role not in ("user", "assistant"):  # skip developer/system scaffolding
             continue
         body = payload.get("content")
         if body is None:
             body = payload.get("text") or payload.get("message")
         text = blocks_to_text(body, keep_thinking)
-        if not text:
+        if not text or (role, text) in seen:
             continue
+        seen.add((role, text))
         yield Message(
             source="codex",
             role=role,
             text=text,
             ts=parse_ts(obj.get("timestamp")),
             session_id=sid,
-            project=payload.get("cwd", "") or "",
+            project=cwd,
             path=path,
             uuid="",
         )

@@ -1,7 +1,7 @@
 """Search engine — offline BM25-lite ranking over sessions and memory files.
 
-No embeddings, no native deps: a compact BM25 with recency and current-project
-boosts. Parsed transcripts are cached per file by mtime, and the ranking index
+No embeddings, no native deps: a compact BM25 with a recency boost. Parsed
+transcripts are cached per file by mtime, and the ranking index
 is rebuilt only when the set of files (or their mtimes) changes — so repeated
 queries in a session are cheap.
 """
@@ -188,7 +188,7 @@ def memory_files() -> list[tuple[str, str]]:
         for f in iter_files(a.memory_globs):
             if f not in seen:
                 seen.add(f)
-                out.append((a.source if False else a.name, f))
+                out.append((a.name, f))
     return out
 
 
@@ -252,5 +252,5 @@ def get_session_messages(session_ref: str) -> list[Message]:
     """Find a session by id substring or file path and return its messages in order."""
     messages, _ = _gather()
     ref = session_ref.strip()
-    matched = [m for m in messages if m.path == ref or m.session_id == ref or ref in m.session_id or ref in m.path]
+    matched = [m for m in messages if ref in m.session_id or ref in m.path]
     return matched
